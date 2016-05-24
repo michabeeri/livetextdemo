@@ -16,6 +16,13 @@
     opacity: 0.9;
 }
 
+#geo-input {
+    width: 100px;
+    height: 20px;
+    margin-bottom: 10px;
+    background: ghostwhite;
+}
+
 .phoneLink {
     background: greenyellow;
 }
