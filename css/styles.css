@@ -1,0 +1,19 @@
+#input-container {
+    width: 100%;
+    height: 300px;
+    background: ghostwhite;
+    padding: 0;
+    margin: 0;
+}
+
+#output-container {
+    width: 100%;
+    height: 300px;
+    background: gainsboro;
+    padding: 0;
+    margin: 0;
+}
+
+.phoneLink {
+    background: greenyellow;
+}
