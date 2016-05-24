@@ -3,8 +3,7 @@
 requirejs.config({
     baseUrl: 'src',
     paths: {
-        lodash: 'https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.3.0/lodash',
-        libphonenumber: "thirdparty/libphonenumber.min"
+        lodash: 'https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.3.0/lodash'
     },
     shim: {
         lodash: { exports: '_' }

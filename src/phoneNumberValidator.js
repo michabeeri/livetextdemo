@@ -1,4 +1,4 @@
-define(['lodash', 'libphonenumber'], function(_, libphonenumber) {
+define(['lodash', 'thirdparty/libphonenumber.min'], function(_, libphonenumber) {
     'use strict';
 
     var phoneUtil = libphonenumber.PhoneNumberUtil.getInstance();
