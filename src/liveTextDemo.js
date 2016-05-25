@@ -10,7 +10,7 @@ define(['lodash', 'phoneNumberValidator'], function (_, phoneNumberValidator) {
     function findPhones (string) {
         var candidates = string.match(candidatePhoneNumberPattern );
         return _.filter(candidates, function (n) {
-            return phoneNumberValidator.validateNumber(n, regionInput.value);
+            return phoneNumberValidator.validateNumber(n, regionSelect.value);
         });
     }
 
@@ -23,14 +23,14 @@ define(['lodash', 'phoneNumberValidator'], function (_, phoneNumberValidator) {
         return htmlContent;
     }
 
-    function onKeyUp () {
+    function generateText () {
         outputContainer.innerHTML = MarkPhones(inputContainer.value);
     }
 
-    var regionInput = document.getElementById("geo-input");
+    var regionSelect = document.getElementById("geo-select");
     var outputContainer = document.getElementById("output-container");
     var inputContainer = document.getElementById("input-container");
-    inputContainer.addEventListener("keyup", onKeyUp);
-    regionInput.addEventListener("keyup", onKeyUp);
+    inputContainer.addEventListener("keyup", generateText);
+    regionSelect.addEventListener("change", generateText);
 
 });

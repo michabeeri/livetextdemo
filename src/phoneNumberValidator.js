@@ -10,9 +10,8 @@ define(['lodash', 'thirdparty/libphonenumber.min'], function(_, libphonenumber) 
     var legalParenthesisPattern = /^\+?\(\d{1,3}\)[^\(\)]*$/;
     var beginsWithPlusPattern = /^\+/;
     var countryCodeInParenthesisCapturePattern = /^\((\d{1,3})\)/;
-    var separateCountryCodePattern = /^\d{1,3}[\s\-\.]/;
+    var separatePrefixPattern = /^\d{1,3}[\s\-\.]/;
     var countryCodeCapturePattern = /^(\d{1,3})/;
-    var countryCodeAfterPlusCapturePattern = /^\+?(\d{1,3})/;
 
     function isSevenToFifteenDigits (number) {
         var digitCount = number.match(singleDigitGlobalPattern).length;
@@ -30,6 +29,11 @@ define(['lodash', 'thirdparty/libphonenumber.min'], function(_, libphonenumber) 
             return false;
         }
 
+        var isLocal = validateLocalNumber(number, userRegion);
+        if(isLocal) {
+            return true;
+        }
+
         var isE164Format = beginsWithPlusPattern.test(number);
         if (isE164Format) {
             return validate(number);
@@ -39,15 +43,15 @@ define(['lodash', 'thirdparty/libphonenumber.min'], function(_, libphonenumber) 
             return validate(number, countryCodeInParenthesisCapturePattern.exec(number)[1]);
         }
 
-        var hasSeparateCountryCode = separateCountryCodePattern.test(number);
-        if (hasSeparateCountryCode) {
+        var hasSeparatePrefix = separatePrefixPattern.test(number);
+        if (hasSeparatePrefix) {
             return validate(number, countryCodeCapturePattern.exec(number)[1]);
         }
 
-        return validateByGuessingCountryCode (number, userRegion);
+        return validateByGuessingCountryCode (number);
     }
 
-    function validateByGuessingCountryCode (number, userRegion) {
+    function validateByGuessingCountryCode (number) {
         var possibleCodes = [
             number.substring(0,1),
             number.substring(0,2),
@@ -60,6 +64,10 @@ define(['lodash', 'thirdparty/libphonenumber.min'], function(_, libphonenumber) 
             }
         });
 
+        return false;
+    }
+
+    function validateLocalNumber (number, userRegion) {
         try {
             return validate(number, phoneUtil.getCountryCodeForRegion(userRegion))
         } catch (e) {
