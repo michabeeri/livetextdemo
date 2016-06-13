@@ -1,23 +1,31 @@
 'use strict';
 
-define(['lodash', 'phoneNumberValidator'], function (_, phoneNumberValidator) {
+define(['lodash', 'textPatternRecognizer'], function (_, textPatternRecognizer) {
 
     function createPhoneAnchorTag (phone) {
         return "<a class=\"phoneLink\" href=\"tel:" + phone + "\">" + phone + "</a>";
     }
 
-    var candidatePhoneNumberPattern = /\+?\(?\d[\d\s\.\-\)]{5,20}\d/g;
-    function findPhones (string) {
-        var candidates = string.match(candidatePhoneNumberPattern );
-        return _.filter(candidates, function (n) {
-            return phoneNumberValidator.validateNumber(n, regionSelect.value);
-        });
+    function createMailAnchorTag (mail) {
+        return "<a class=\"mailLink\" href=\"mailto:" + mail + "\">" + mail + "</a>";
+    }
+
+    function createUrlAnchorTag (url) {
+        return "<a class=\"url\" href=\"" + url + "\">" + url + "</a>";
     }
 
     function MarkPhones (htmlContent) {
-        var phones = findPhones(htmlContent);
-        _.forEach(phones, function (p) {
-            htmlContent = htmlContent.replace(p, createPhoneAnchorTag(p))
+        var patterns = textPatternRecognizer.findPatterns(htmlContent);
+        _.forEach(_.keys(patterns.phoneNumbers), function (k) {
+            htmlContent = htmlContent.replace(k, createPhoneAnchorTag(patterns.phoneNumbers[k]));
+        });
+
+        _.forEach(patterns.emails, function (mail) {
+            htmlContent = htmlContent.replace(mail, createMailAnchorTag(mail));
+        });
+
+        _.forEach(patterns.urls, function (url) {
+            htmlContent = htmlContent.replace(url, createUrlAnchorTag(url));
         });
 
         return htmlContent;
@@ -26,11 +34,9 @@ define(['lodash', 'phoneNumberValidator'], function (_, phoneNumberValidator) {
     function generateText () {
         outputContainer.innerHTML = MarkPhones(inputContainer.value);
     }
-
-    var regionSelect = document.getElementById("geo-select");
+    
     var outputContainer = document.getElementById("output-container");
     var inputContainer = document.getElementById("input-container");
     inputContainer.addEventListener("keyup", generateText);
-    regionSelect.addEventListener("change", generateText);
 
 });
