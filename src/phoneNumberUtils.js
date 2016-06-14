@@ -3,7 +3,6 @@ define(['lodash', 'thirdparty/libphonenumber.min'], function(_, libphonenumber) 
     var phoneUtil = libphonenumber.PhoneNumberUtil.getInstance();
     var PNF = libphonenumber.PhoneNumberFormat;
     var countryCodeToRegionMap = createCountryCodesToRegionsMap();
-    var DEFAULT_COUNTRY_CODE = '+1';
 
     function validateNumber(number, userGeo) {
         return tryParseNumber(number, userGeo) !== null;
@@ -18,8 +17,8 @@ define(['lodash', 'thirdparty/libphonenumber.min'], function(_, libphonenumber) 
             return null;
         }
 
-        var beginsWithParentasis = /^\+?\(\d{1,3}\)/.test(number);
-        var hasLegalParentasis = /^[^\(\)]*(\(\d{1,3}\))?[^\(\)]*$/.test(number);
+        var beginsWithParentasis = /^\+?\(\d{1,4}\)/.test(number);
+        var hasLegalParentasis = /^[^\(\)]*(\(\d{1,4}\))?[^\(\)]*$/.test(number);
         if (!hasLegalParentasis) {
             return null;
         }
@@ -36,15 +35,15 @@ define(['lodash', 'thirdparty/libphonenumber.min'], function(_, libphonenumber) 
         }
 
         if (beginsWithParentasis) {
-            return tryParseInternal(number, /^\((\d{1,3})\)/.exec(number)[1]);
+            return tryParseInternal(number, /^\((\d{1,4})\)/.exec(number)[1]);
         }
 
-        var hasSeparatePrefix = /^\d{1,3}[\s\-\.]/.test(number);
+        var hasSeparatePrefix = /^\d{1,4}[ \-\.]/.test(number);
         if (hasSeparatePrefix) {
-            return tryParseInternal(number, /^(\d{1,3})/.exec(number)[1]);
+            return tryParseInternal(number, /^(\d{1,4})/.exec(number)[1]);
         }
 
-        var possibleGuesses = _([number.substring(0, 1), number.substring(0, 2), number.substring(0, 3)])
+        var possibleGuesses = _([number.substring(0, 1), number.substring(0, 2), number.substring(0, 3), number.substring(0, 4)])
             .map(function (code) {
                 return tryParseInternal(number, code);
             })
@@ -66,7 +65,7 @@ define(['lodash', 'thirdparty/libphonenumber.min'], function(_, libphonenumber) 
         var validPossibilities = _.map(regions, function (region) {
             try {
                 var pn = phoneUtil.parse(number, region);
-                if (phoneUtil.isValidNumber(pn)) {
+                if (phoneUtil.isValidNumber(pn)) { //if (pn) {
                     return phoneUtil.format(pn, PNF.E164);
                 }
             } catch (e) {

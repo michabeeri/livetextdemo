@@ -4,7 +4,7 @@ define(['lodash', 'phoneNumberUtils'], function (_, phoneNumberUtils) {
 
     var emailPattern = /(?:^|\s)([A-Z0-9][A-Z0-9._%+-]+@[A-Z0-9][A-Z0-9.-]+\.[A-Z]{2,})(?=$|\s)/ig; //http://www.regular-expressions.info/email.html
     var urlPattern =  /(?:^|\s)((?:https?|ftp):\/\/(?:[^\s/?.#-]+\.?)+(?:\/[^\s]*)?)(?=$|\s)/g; //https://mathiasbynens.be/demo/url-regex (@imme_emosol)
-    var candidatePhoneNumberPattern = /\+?\(?\d[\d\s\.\-\(\)]{5,20}\d/g;
+    var candidatePhoneNumberPattern = /\+?\(?\d(?:(?: | ?[\-\.\(\)] ?| ?[\-\.] ?[\(\)] ?)?\d){5,20}\d/g;
     var allButAnchorsPattern = /(?:^|\/a>)((?:[^<]|<(?!a))+)(?:<a|$)/g;
 
     function findPatterns (subject, userGeo) {
