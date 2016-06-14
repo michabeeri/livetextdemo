@@ -29,7 +29,7 @@ define(['lodash', 'thirdparty/libphonenumber.min'], function(_, libphonenumber) 
         }
 
         var userCode = getUserCountryCode(userGeo);
-        var localNumber = tryParseInternal(number, userCode);
+        var localNumber = tryParseInternal(number, userCode, true);
         if (localNumber) {
             return localNumber;
         }
@@ -53,7 +53,7 @@ define(['lodash', 'thirdparty/libphonenumber.min'], function(_, libphonenumber) 
         return _.first(possibleGuesses);
     }
 
-    function tryParseInternal(number, countryCode) {
+    function tryParseInternal(number, countryCode, strict) {
         var regions = [null];
         if (countryCode) {
             regions = countryCodeToRegionMap[countryCode];
@@ -65,8 +65,10 @@ define(['lodash', 'thirdparty/libphonenumber.min'], function(_, libphonenumber) 
         var validPossibilities = _.map(regions, function (region) {
             try {
                 var pn = phoneUtil.parse(number, region);
-                if (phoneUtil.isValidNumber(pn)) { //if (pn) {
-                    return phoneUtil.format(pn, PNF.E164);
+                if (pn) {
+                    if (!strict || phoneUtil.isValidNumber(pn)) {
+                        return phoneUtil.format(pn, PNF.E164);
+                    }
                 }
             } catch (e) {
                 // fail silently;

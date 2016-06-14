@@ -15,20 +15,32 @@ define(['lodash', 'textPatternRecognizer'], function (_, textPatternRecognizer) 
     }
 
     function MarkPhones (htmlContent) {
-        var patterns = textPatternRecognizer.findPatterns(htmlContent);
-        _.forEach(_.keys(patterns.phoneNumbers), function (k) {
-            htmlContent = htmlContent.replace(k, createPhoneAnchorTag(patterns.phoneNumbers[k]));
+        var recognizedItems = _.orderBy(textPatternRecognizer.findPatterns(htmlContent), 'index', 'desc');
+
+        var processedItems = _.map(recognizedItems, function(item) {
+           switch (item.patternType) {
+               case textPatternRecognizer.PatternType.PHONE :
+                   return _.assign({}, item, {value: createPhoneAnchorTag(item.value)});
+
+               case textPatternRecognizer.PatternType.MAIL :
+                   return _.assign({}, item, {value: createMailAnchorTag(item.value)});
+
+               case textPatternRecognizer.PatternType.URL :
+                   return _.assign({}, item, {value: createUrlAnchorTag(item.value)});
+
+               throw "Unknown patternType";
+           }
         });
 
-        _.forEach(patterns.emails, function (mail) {
-            htmlContent = htmlContent.replace(mail, createMailAnchorTag(mail));
-        });
-
-        _.forEach(patterns.urls, function (url) {
-            htmlContent = htmlContent.replace(url, createUrlAnchorTag(url));
+        _.forEach(processedItems, function (item) {
+            htmlContent = replaceWithAnchorTag(htmlContent, item);
         });
 
         return htmlContent;
+    }
+
+    function replaceWithAnchorTag(htmlContent, item) {
+        return htmlContent.slice(0, item.index) + item.value + htmlContent.slice(item.index + item.key.length);
     }
 
     function generateText () {
