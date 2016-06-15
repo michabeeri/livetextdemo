@@ -4,87 +4,95 @@ define(['lodash', 'thirdparty/libphonenumber.min'], function(_, libphonenumber) 
     var PNF = libphonenumber.PhoneNumberFormat;
     var countryCodeToRegionMap = createCountryCodesToRegionsMap();
 
-    function validateNumber(number, userGeo) {
-        return tryParseNumber(number, userGeo) !== null;
-    }
+    var validationRules = [
+        validateNotEmpty,
+        validateLegalParenthesis,
+        validateLegalSeparators
+    ];
 
-    function tryParseNumber(number, userGeo) {
-        if (!number) {
-            return null;
-        }
+    var parsingRules = [
+        tryParseWithLeadingParenthesis,
+        tryParseWithSeparatePrefix,
+        tryParseLocal,
+        tryParseByGuessingCountryCode
+    ];
 
-        var hasLegalParentasis = /^[^\(\)]*(\(\d{1,4}\))?[^\(\)]*$/.test(number);
-        if (!hasLegalParentasis) {
-            return null;
+    function tryParseNumber(number, userCountryCode) {
+        for (var i=0; i < validationRules.length; i++) {
+            if(!validationRules[i](number)) {
+                return null;
+            }
         }
 
         var isE164Format = /^\+/.test(number);
         if (isE164Format) {
-            return tryParseInternal(number);
+            return tryParseInternal(number, null);
         }
 
-        var successfulParse = parseWithLeadingParentasis(number);
-        if (successfulParse) {
-            return successfulParse;
+        for (var j=0; j < parsingRules.length; j++) {
+            var successfulParse = parsingRules[j](number, userCountryCode);
+            if(successfulParse) {
+                return successfulParse;
+            }
         }
 
-        successfulParse = parseWithSeparatePrefix(number);
-        if (successfulParse) {
-            return successfulParse;
+        return null;
+    }
+
+    function validateNotEmpty(number) {
+        return !!number;
+    }
+
+    function validateLegalParenthesis(number) {
+        return /^[^\(\)]*(?:\(\d{1,4}\))?[^\(\)]*$/.test(number);
+    }
+
+    function validateLegalSeparators(number) {
+        return !/\-\-|\.\./.test(number);
+    }
+
+    function tryParseWithLeadingParenthesis(number) {
+        var leadingParenthesisExecResult = /^\([0]*([1-9]\d{0,3})\)/.exec(number);
+        if (!leadingParenthesisExecResult) {
+            return null;
         }
 
-        var cleanNumber = noLeadingZeroes(digitsOnly(number));
+        var cleanNumber = clearNonDigitsAndLeadingZeroes(number);
+        return tryParseWithCountryCode(cleanNumber, leadingParenthesisExecResult[1]);
+    }
 
-        successfulParse = parseLocal(cleanNumber, userGeo);
-        if (successfulParse) {
-            return successfulParse;
+    function tryParseWithSeparatePrefix(number) {
+        var separatePrefixExecResult = /^0*(\d{1,4})[ \-\.]/.exec(number);
+        if (!separatePrefixExecResult) {
+            return null;
         }
 
-        var possibleGuesses = makePossibleGuesses(cleanNumber);
+        var cleanNumber = clearNonDigitsAndLeadingZeroes(number);
+        return tryParseWithCountryCode(cleanNumber, separatePrefixExecResult[1]);
+    }
 
+    function tryParseLocal(number, userCountryCode) {
+        var cleanNumber = clearNonDigitsAndLeadingZeroes(number);
+        return tryParseWithCountryCode(cleanNumber, userCountryCode);
+    }
+
+    function tryParseByGuessingCountryCode(number) {
+        var possibleGuesses = makePossibleGuesses(number);
         return _(possibleGuesses)
             .map(function (guess) {
-                return tryParseInternal(guess.restOfNumber, guess.countryCode);
+                return tryParseWithCountryCode(guess.restOfNumber, guess.countryCode);
             })
             .compact()
             .first();
     }
 
-    function parseLocal(number, userGeo) {
-        var notLocal = number.indexOf(userGeo) == 0;
-        if (notLocal) {
-            return null;
-        }
-
-        return tryParseInternal(number, userGeo);
-    }
-
-    function parseWithLeadingParentasis(number) {
-        var leadingParentasisExecResult = /^\([0]*([1-9]\d{0,3})\)/.exec(number);
-        if (!leadingParentasisExecResult) {
-            return null;
-        }
-        return tryParseInternal(number, leadingParentasisExecResult[1]);
-    }
-
-    function parseWithSeparatePrefix(number) {
-        var separatePrefixExecResult = /^(\d{1,4})[ \-\.]/.exec(number);
-        if (!separatePrefixExecResult) {
-            return null;
-        }
-        return tryParseInternal(number, separatePrefixExecResult[1]);
-    }
-
-    function digitsOnly(number) {
-        return number.match(/\d/g).join("");
-    }
-
-    function noLeadingZeroes(number) {
-        return /^[0]*([^0].*)$/.exec(number)[1];
+    function clearNonDigitsAndLeadingZeroes(number) {
+        var digitsOnly = number.match(/\d/g).join("");
+        return /^[0]*([^0].*)$/.exec(digitsOnly)[1];
     }
 
     function makePossibleGuesses(number) {
-        var cleanNumber = noLeadingZeroes(digitsOnly(number));
+        var cleanNumber = clearNonDigitsAndLeadingZeroes(number);
         return _([
                 /^([1-9])(\d*)$/.exec(cleanNumber),
                 /^([1-9]\d)(\d*)$/.exec(cleanNumber),
@@ -101,32 +109,37 @@ define(['lodash', 'thirdparty/libphonenumber.min'], function(_, libphonenumber) 
             .value();
     }
 
-    function tryParseInternal(number, countryCode, loose) {
-        var regions = [null];
-        if (countryCode) {
-            regions = countryCodeToRegionMap[countryCode];
-            if (!regions) {
-                return null;
-            }
+    function tryParseWithCountryCode(number, countryCode) {
+        var regions = getPossibleRegions(countryCode)
+        if (!regions) {
+            return null;
         }
 
-        var validPossibilities = _.map(regions, function (region) {
-            try {
-                var pn = phoneUtil.parse(number, region);
-                if (pn) {
-                    if (loose || phoneUtil.isValidNumber(pn)) {
-                        return phoneUtil.format(pn, PNF.E164);
-                    }
-                }
-            } catch (e) {
-                // fail silently;
-            }
-        });
+        return _(regions)
+            .map(function (region) {
+                return tryParseInternal(number, region);
+            })
+            .compact()
+            .first();
+    }
 
-        if (validPossibilities.length > 0) {
-            return validPossibilities[0];
+    function getPossibleRegions(countryCode) {
+        if (!countryCode) {
+            return null;
         }
 
+        return countryCodeToRegionMap[countryCode];
+    }
+
+    function tryParseInternal(number, region) {
+        try {
+            var pn = phoneUtil.parse(number, region);
+            if (pn && phoneUtil.isValidNumber(pn)) {
+                return phoneUtil.format(pn, PNF.E164);
+            }
+        } catch (e) {
+            // fail silently;
+        }
         return null;
     }
 
@@ -142,6 +155,15 @@ define(['lodash', 'thirdparty/libphonenumber.min'], function(_, libphonenumber) 
 
     return {
         tryParseNumber: tryParseNumber,
-        validateNumber: validateNumber
+        validateNotEmpty: validateNotEmpty,
+        validateLegalParenthesis: validateLegalParenthesis,
+        validateLegalSeparators: validateLegalSeparators,
+        tryParseWithLeadingParenthesis: tryParseWithLeadingParenthesis,
+        tryParseWithSeparatePrefix: tryParseWithSeparatePrefix,
+        tryParseLocal: tryParseLocal,
+        tryParseByGuessingCountryCode: tryParseByGuessingCountryCode,
+        clearNonDigitsAndLeadingZeroes: clearNonDigitsAndLeadingZeroes,
+        makePossibleGuesses: makePossibleGuesses,
+        tryParseWithCountryCode: tryParseWithCountryCode
     };
 });
