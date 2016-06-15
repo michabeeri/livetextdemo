@@ -35,22 +35,49 @@ define(['lodash', 'thirdparty/libphonenumber.min'], function(_, libphonenumber) 
         }
 
         if (beginsWithParentasis) {
-            return tryParseInternal(number, /^\((\d{1,4})\)/.exec(number)[1]);
+            var numberBeginsWithParentasis = tryParseInternal(number, /^\([0]{0,2}(\d{1,4})\)/.exec(number)[1]);
+            if (numberBeginsWithParentasis) {
+                return numberBeginsWithParentasis;
+            }
         }
 
         var hasSeparatePrefix = /^\d{1,4}[ \-\.]/.test(number);
         if (hasSeparatePrefix) {
-            return tryParseInternal(number, /^(\d{1,4})/.exec(number)[1]);
+            var numberHasSeparatePrefix = tryParseInternal(number, /^(\d{1,4})/.exec(number)[1]);
+            if (numberHasSeparatePrefix) {
+                return numberHasSeparatePrefix;
+            }
         }
 
-        var possibleGuesses = _([number.substring(0, 1), number.substring(0, 2), number.substring(0, 3), number.substring(0, 4)])
+        var possibleGuesses = _(makePossibleGuesses(number))
             .map(function (code) {
-                return tryParseInternal(number, code);
+                return tryParseInternal(removeZeroes(number), code);
             })
             .compact()
             .value();
 
         return _.first(possibleGuesses);
+    }
+
+    function 
+
+    function removeZeroes(number) {
+        var execResult = /^[0]*([1-9])$/.exec(number);
+        return execResult ? execResult[1] : null;
+    }
+
+    function makePossibleGuesses(number) {
+        return _([
+                /^[0]{0,3}([1-9])/.exec(number),
+                /^[0]{0,2}([1-9]{2})/.exec(number),
+                /^[0]?([1-9]{3})/.exec(number),
+                /^([1-9]{4})/.exec(number)
+            ])
+            .compact()
+            .map(function (executionResult){
+                return executionResult[1];
+            })
+            .value();
     }
 
     function tryParseInternal(number, countryCode, strict) {
@@ -62,6 +89,7 @@ define(['lodash', 'thirdparty/libphonenumber.min'], function(_, libphonenumber) 
             }
         }
 
+        strict = true;
         var validPossibilities = _.map(regions, function (region) {
             try {
                 var pn = phoneUtil.parse(number, region);

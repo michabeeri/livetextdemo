@@ -2,16 +2,16 @@
 
 define(['lodash', 'textPatternRecognizer'], function (_, textPatternRecognizer) {
 
-    function createPhoneAnchorTag (phone) {
-        return "<a class=\"phoneLink\" href=\"tel:" + phone + "\">" + phone + "</a>";
+    function createPhoneAnchorTag (item) {
+        return "<a class=\"phoneLink\" href=\"tel:" + item.value + "\">" + item.key + "</a>";
     }
 
-    function createMailAnchorTag (mail) {
-        return "<a class=\"mailLink\" href=\"mailto:" + mail + "\">" + mail + "</a>";
+    function createMailAnchorTag (item) {
+        return "<a class=\"mailLink\" href=\"mailto:" + item.value + "\">" + item.key + "</a>";
     }
 
-    function createUrlAnchorTag (url) {
-        return "<a class=\"url\" href=\"" + url + "\">" + url + "</a>";
+    function createUrlAnchorTag (item) {
+        return "<a class=\"url\" href=\"" + item.value + "\">" + item.key + "</a>";
     }
 
     function MarkPhones (htmlContent) {
@@ -20,13 +20,13 @@ define(['lodash', 'textPatternRecognizer'], function (_, textPatternRecognizer) 
         var processedItems = _.map(recognizedItems, function(item) {
            switch (item.patternType) {
                case textPatternRecognizer.PatternType.PHONE :
-                   return _.assign({}, item, {value: createPhoneAnchorTag(item.value)});
+                   return _.assign({}, item, {markup: createPhoneAnchorTag(item)});
 
                case textPatternRecognizer.PatternType.MAIL :
-                   return _.assign({}, item, {value: createMailAnchorTag(item.value)});
+                   return _.assign({}, item, {markup: createMailAnchorTag(item)});
 
                case textPatternRecognizer.PatternType.URL :
-                   return _.assign({}, item, {value: createUrlAnchorTag(item.value)});
+                   return _.assign({}, item, {markup: createUrlAnchorTag(item)});
 
                throw "Unknown patternType";
            }
@@ -40,7 +40,7 @@ define(['lodash', 'textPatternRecognizer'], function (_, textPatternRecognizer) 
     }
 
     function replaceWithAnchorTag(htmlContent, item) {
-        return htmlContent.slice(0, item.index) + item.value + htmlContent.slice(item.index + item.key.length);
+        return htmlContent.slice(0, item.index) + item.markup + htmlContent.slice(item.index + item.key.length);
     }
 
     function generateText () {
