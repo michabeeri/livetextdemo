@@ -16,6 +16,11 @@
     opacity: 0.9;
 }
 
+#country-code-label {
+    margin-bottom: 5px;
+    display: block;
+}
+
 .phoneLink {
     background: greenyellow;
 }

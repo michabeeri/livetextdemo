@@ -15,22 +15,25 @@ define(['lodash', 'textPatternRecognizer'], function (_, textPatternRecognizer) 
     }
 
     function MarkPhones (htmlContent) {
-        var recognizedItems = _.orderBy(textPatternRecognizer.findPatterns(htmlContent), 'index', 'desc');
+        var recognizedItems = textPatternRecognizer.findPatterns(htmlContent, countryCode.value)
 
-        var processedItems = _.map(recognizedItems, function(item) {
-           switch (item.patternType) {
-               case textPatternRecognizer.PatternType.PHONE :
-                   return _.assign({}, item, {markup: createPhoneAnchorTag(item)});
+        var processedItems = _(recognizedItems)
+            .orderBy('index', 'desc')
+            .map(function(item) {
+                switch (item.patternType) {
+                   case textPatternRecognizer.PatternType.PHONE :
+                       return _.assign({}, item, {markup: createPhoneAnchorTag(item)});
 
-               case textPatternRecognizer.PatternType.MAIL :
-                   return _.assign({}, item, {markup: createMailAnchorTag(item)});
+                   case textPatternRecognizer.PatternType.MAIL :
+                       return _.assign({}, item, {markup: createMailAnchorTag(item)});
 
-               case textPatternRecognizer.PatternType.URL :
-                   return _.assign({}, item, {markup: createUrlAnchorTag(item)});
+                   case textPatternRecognizer.PatternType.URL :
+                       return _.assign({}, item, {markup: createUrlAnchorTag(item)});
 
-               throw "Unknown patternType";
-           }
-        });
+                   throw "Unknown patternType";
+                }
+            })
+            .value();
 
         _.forEach(processedItems, function (item) {
             htmlContent = replaceWithAnchorTag(htmlContent, item);
@@ -49,6 +52,8 @@ define(['lodash', 'textPatternRecognizer'], function (_, textPatternRecognizer) 
     
     var outputContainer = document.getElementById("output-container");
     var inputContainer = document.getElementById("input-container");
+    var countryCode = document.getElementById("country-code");
     inputContainer.addEventListener("keyup", generateText);
+    countryCode.addEventListener("keyup", generateText);
 
 });
