@@ -20,14 +20,14 @@ define(['lodash', 'textPatternRecognizer'], function (_, textPatternRecognizer) 
         var processedItems = _(recognizedItems)
             .orderBy('index', 'desc')
             .map(function(item) {
-                switch (item.patternType) {
-                   case textPatternRecognizer.PatternType.PHONE :
+                switch (item.pattern) {
+                   case textPatternRecognizer.Pattern.PHONE :
                        return _.assign({}, item, {markup: createPhoneAnchorTag(item)});
 
-                   case textPatternRecognizer.PatternType.MAIL :
+                   case textPatternRecognizer.Pattern.MAIL :
                        return _.assign({}, item, {markup: createMailAnchorTag(item)});
 
-                   case textPatternRecognizer.PatternType.URL :
+                   case textPatternRecognizer.Pattern.URL :
                        return _.assign({}, item, {markup: createUrlAnchorTag(item)});
 
                    throw "Unknown patternType";
