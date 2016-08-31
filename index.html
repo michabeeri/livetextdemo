@@ -7,12 +7,37 @@
         <link rel="stylesheet" href="css/styles.css">
     </head>
     <body>
-        <label id="country-code-label">
-            <span>Country Code</span>
-            <input id="country-code" type="text" value="972" required>
-        </label>
-        <textarea id="input-container"></textarea>
-        <div id="output-container"></div>
+        <!--<label id="country-code-label">-->
+            <!--<span>Country Code</span>-->
+            <!--<input id="country-code" type="text" value="972" required>-->
+        <!--</label>-->
+        <!--<textarea id="input-container"></textarea>-->
+        <!--<div id="output-container"></div>-->
+        <ul id="controls">
+            <li id="address-label" class="control-line">
+                <span class="control-line-label">Wix site url:</span>
+                <input id="address-input" type="text" value="http://editor177.wixsite.com/checking-fonts">
+                <input id="open-button" type="button" value="Open">
+            </li>
+            <li id="show-always" class="control-line">
+                <span class="control-line-label">Show font sizes:</span>
+                <input id="show-always-input" type="checkbox">
+            </li>
+        </ul>
+        <div id="container">
+            <div id="desktop-site-container" class="site-container">
+                <h3>Desktop</h3>
+                <iframe id="desktop-site" class="site" src="" frameborder="0"></iframe>
+            </div>
+            <div id="current-site-container" class="site-container">
+                <h3>current</h3>
+                <iframe id="regular-site" class="site" src="" frameborder="0"></iframe>
+            </div>
+            <div id="new-site-container" class="site-container">
+                <h3>new</h3>
+                <iframe id="new-site" class="site" src="" frameborder="0"></iframe>
+            </div>
+        </div>
     </body>
     <script data-main="src/main" src="http://requirejs.org/docs/release/2.1.22/minified/require.js"></script>
 </html>

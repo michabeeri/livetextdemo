@@ -1,34 +1,44 @@
-#input-container {
-    width: 100%;
-    height: 200px;
-    background: ghostwhite;
-    padding: 0;
-    margin: 0;
-    opacity: 0.9;
+#container {
+    width: 100vw;
+    display: flex;
 }
 
-#output-container {
-    width: 100%;
-    height: 200px;
-    background: gainsboro;
-    padding: 0;
-    margin: 0;
-    opacity: 0.9;
+.site-container {
+    height: 100vh;
 }
 
-#country-code-label {
-    margin-bottom: 5px;
+.site {
+    width: 100%;
+    height: 100%;
+    border: black 1px solid;
+}
+
+#controls {
+    padding: 0;
+    margin: 10px;
     display: block;
+    list-style-type: none;
 }
 
-.phoneLink {
-    background: greenyellow;
+#address-input {
+    width: 600px;
 }
 
-.mailLink {
-    background: steelblue;
+.control-line {
+    margin: 5px;
 }
 
-.url {
-    background: lightsalmon;
+/*.control-line-label {*/
+    /*width: 80px;*/
+/*}*/
+
+#desktop-site-container {
+    flex-basis: 980px;
+    flex-shrink: 3;
+}
+
+#current-site-container
+#new-site-container {
+    flex-basis: 320px;
+    flex-shrink: 1;
 }
