@@ -2,6 +2,7 @@
 
 define(['lodash'], function (_) {
 
+    var reactSource = 'http://localhost';//'51a47caaae481797fa1290466d19cd6ee7ca20a6'; //'http://localhost';
     var previousShowAlways = false;
     var permanentShowAlways = false;
     var temporaryShowAlways = false;
@@ -36,16 +37,18 @@ define(['lodash'], function (_) {
     showAlwaysCheckBox.addEventListener('change', onShowAlwaysCheckboxChange);
 
     var desktopSite = document.getElementById('desktop-site');
-    var regularSite = document.getElementById('regular-site');
+    var original = document.getElementById('original-site');
+    var originalNoScale = document.getElementById('original-withoutScale-site');
     var newSite = document.getElementById('new-site');
     handleAddress();
 
 
     function handleAddress(){
-        var address = addressInput.value;
-        desktopSite.src = address + '?ReactSource=d793eaebc1f3ca098d092d5ce44db9593ab5ad3a';
-        regularSite.src = address + '?ReactSource=d793eaebc1f3ca098d092d5ce44db9593ab5ad3a&showMobileView=true';
-        newSite.src = address + '?ReactSource=d793eaebc1f3ca098d092d5ce44db9593ab5ad3a&showMobileView=true&experiments=newFontTransform';
+        var address = _.includes(addressInput.value,'?debug=all') ? addressInput.value + '&' : addressInput.value + '?';
+        desktopSite.src = address + 'ReactSource=' + reactSource;
+        original.src = address + 'ReactSource=' + reactSource + '&showMobileView=true';
+        originalNoScale.src = address + 'ReactSource=' + reactSource + '&showMobileView=true&experiments=ignoreScale';
+        newSite.src = address + 'ReactSource=' + reactSource + '&showMobileView=true&experiments=newFontTransform,ignoreScale';
     }
 
     function setShowAlways() {
@@ -53,7 +56,7 @@ define(['lodash'], function (_) {
         var show = permanentShowAlways || temporaryShowAlways;
         if (previousShowAlways !== show) {
             previousShowAlways = show;
-            _.forEach([desktopSite, regularSite, newSite], function(iframe){
+            _.forEach([desktopSite, original, originalNoScale, newSite], function(iframe){
                 iframe.contentWindow.postMessage('show-always', '*');
             })
         }

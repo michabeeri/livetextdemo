@@ -37,7 +37,8 @@
     flex-shrink: 3;
 }
 
-#current-site-container
+#original-site-container,
+#original-withoutScale-site-container,
 #new-site-container {
     flex-basis: 320px;
     flex-shrink: 1;
