@@ -2,7 +2,7 @@
 
 define(['lodash'], function (_) {
 
-    var reactSource = 'http://localhost';//'51a47caaae481797fa1290466d19cd6ee7ca20a6'; //'http://localhost';
+    var reactSource = 'bcc10103096eea81b2ad21060166c04be912f0a0'; //'http://localhost';
     var previousShowAlways = false;
     var permanentShowAlways = false;
     var temporaryShowAlways = false;
